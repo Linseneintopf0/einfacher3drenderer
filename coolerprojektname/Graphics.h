@@ -5,6 +5,7 @@
 #include "Ausnahmen.h"
 #include "Window.h"
 #include <wrl.h>
+#include "Camera.h"
 
 class Graphics
 {
@@ -23,7 +24,7 @@ public:
 	{
 		pContext->ClearRenderTargetView(pTarget.Get(), color->color);
 	}
-	void DrawTestTriangle(unsigned int width, unsigned int height, float angle);
+	void DrawTestTriangle(unsigned int width, unsigned int height, Camera::transformstruct transformstruct);
 
 public:
 	Microsoft::WRL::ComPtr<ID3D11Device> pDevice;

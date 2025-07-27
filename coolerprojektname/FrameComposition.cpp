@@ -3,6 +3,7 @@
 #include "gfxupdate.h"
 #include "Ausnahmen.h"
 #include <sstream>
+#include "Camera.h"
 
 void gfxupdate::DoFrame(Window &wnd)
 {
@@ -35,25 +36,13 @@ void gfxupdate::DoFrame(Window &wnd)
 	}
 	else if (wnd.sGfx->dateipfad == "TRIANGLE")
 	{
-		switch (wnd.currentpressedkey)
-			{
-			case VK_RIGHT:
-				{
-					wnd.angle += 0.05f;
-					break;
-				}
-			case VK_LEFT:
-				{
-					wnd.angle += -0.05f;
-					break;
-				}
-			}
+		wnd.stf = Camera::UpDatePosition(wnd.stf, wnd.currentpressedkey);
+		wnd.stf.rx = Camera::RotationLoop(wnd.stf.rx);
+		wnd.stf.ry = Camera::RotationLoop(wnd.stf.ry);
+		wnd.stf.rz = Camera::RotationLoop(wnd.stf.rz);
+
 		wnd.pGraphics().ClearBuffer(wnd.sGfx->colorobj);
-		wnd.pGraphics().DrawTestTriangle(wnd.width, wnd.height, wnd.angle);
-		if (wnd.angle >= 2 * (std::atan(1.0f)*4) || wnd.angle <= -2 * (std::atan(1.0f) * 4))
-		{
-			wnd.angle = 0.0f;
-		}
+		wnd.pGraphics().DrawTestTriangle(wnd.width, wnd.height, wnd.stf);
 	}
 	else
 	{

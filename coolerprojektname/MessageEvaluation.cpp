@@ -26,15 +26,6 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	}
 	case WM_CHAR:
 	{
-		if (wParam != VK_BACK)
-		{
-			title.push_back((char)wParam);
-		}
-		else if (title.size() > 0)
-		{
-			title.erase(title.size() - 1);
-		}
-		SetWindowTextA(hWnd, title.c_str());
 		break;
 	}
 	case WM_KEYDOWN:

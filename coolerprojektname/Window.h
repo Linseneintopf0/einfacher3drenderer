@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include "Color.h"
+#include "Camera.h"
 
 class Graphics;
 class Window
@@ -17,6 +18,7 @@ public:
 		const Color* colorobj;
 	};
 	const graphicsstruct* sGfx;
+	Camera::transformstruct stf;
 public:
 	class WindowAusnahme : public Ausnahmen
 	{
@@ -60,7 +62,6 @@ private:
 	std::unique_ptr<Graphics> pGfx;
 	mutable std::string title;
 public:
-	float angle = 0;
 	WPARAM currentpressedkey = 0;
 	unsigned int width;
 	unsigned int height;

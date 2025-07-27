@@ -53,25 +53,12 @@ int CALLBACK WinMain(
 		BOOL bPMResult;
 		while (msg.message != WM_QUIT)
 		{
-			if (msg.message != WM_CHAR)
+			bPMResult = PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
+			TranslateMessage(&msg);
+			DispatchMessageA(&msg);
+			for (unsigned int i = 0; i < Window::WindowCount; i++)
 			{
-				bPMResult = PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
-				TranslateMessage(&msg);
-				DispatchMessageA(&msg);
-				for (unsigned int i = 0; i < Window::WindowCount; i++)
-				{
-					gfxupdate::DoFrame(*Window::windowlist[i]);
-				}
-			}
-			else
-			{
-				GetMessageA(&msg, NULL, 0, 0);
-				TranslateMessage(&msg);
-				DispatchMessageA(&msg);
-				for (unsigned int i = 0; i < Window::WindowCount; i++)
-				{
-					gfxupdate::DoFrame(*Window::windowlist[i]);
-				}
+				gfxupdate::DoFrame(*Window::windowlist[i]);
 			}
 		}
 	}

@@ -74,6 +74,9 @@
     <ClInclude Include="DebugTools.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="coolerprojektname.rc">

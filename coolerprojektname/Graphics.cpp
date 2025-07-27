@@ -4,6 +4,8 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 
+namespace dx = DirectX; //DirectX Math Library für Mathematische Operationen
+
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"D3DCompiler.lib")
 
@@ -62,7 +64,7 @@ Graphics::Graphics(HWND hWnd)
 	pBackBuffer->Release();
 }
 
-void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, float angle)
+void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, Camera::transformstruct transformstruct)
 {
 	float aspectratio = (float)height / width;
 
@@ -74,6 +76,7 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, float a
 		{
 			float x;
 			float y;
+			float z;
 		} pos;
 		struct
 		{
@@ -85,10 +88,15 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, float a
 	};
 
 	Vertex verticies[] =
-	{//    x      y     r    g    b    a (wird eh überschrieben, allerdings braucht die PrimitiveTopology den Alpha Wert)
-		{-0.2f,  0.0f, 255,   0,   0,   0},
-		{ 0.2f,  0.0f,   0,   0, 255,   0},
-		{ 0.0f,  1.0f, 255, 255, 255,   0},
+	{//    x      y		z     r    g    b    a (wird eh überschrieben, allerdings braucht die PrimitiveTopology den Alpha Wert)
+		{ 0.0f,  0.0f, 0.0f, 255,   0,   0,   0},	//0
+		{ 1.0f,  0.0f, 0.0f, 255, 255,   0,   0},	//1
+		{ 0.0f,  1.0f, 0.0f, 255, 255,   0,   0},	//2
+		{ 1.0f,  1.0f, 0.0f,   0, 255,   0,   0},	//3
+		{ 0.0f,  0.0f, 1.0f, 255, 255,   0,   0},	//4
+		{ 1.0f,  0.0f, 1.0f,   0, 255,   0,   0},	//5
+		{ 0.0f,  1.0f, 1.0f,   0, 255,   0,   0},	//6
+		{ 1.0f,  1.0f, 1.0f,   0,   0, 255,   0},	//7
 	};
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;		//ein ComPointer für den Buffer erstellen (ComPointer releasen nach abschluss der COM Interface verwendung -> kein Memory Leck)
 
@@ -107,7 +115,13 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, float a
 
 	const unsigned short indices[] =
 	{
-		0, 2, 1,
+		0, 3, 1,	0, 2, 3, //down
+		0, 6, 2,	0, 4, 6, //back
+		0, 1, 5,	0, 5, 4, //left
+
+		7, 4, 5,	7, 6, 4, //up
+		7, 5, 1,	7, 1, 3, //front
+		7, 2, 6,	7, 3, 2, //right
 	};
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
 	D3D11_BUFFER_DESC ibd = {};
@@ -126,19 +140,21 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, float a
 
 	struct ConstantBuffer
 	{													//Const Buffer = Buffer der sich wärend eines Frames nicht ändert
-		struct											//const buffer != const in c++
-		{
-			float element[16];						//erstellen einer übersichtlichen 4x4 Matrix
-		} transformation;
+		dx::XMMATRIX transform;	//Mathematische Rotationsmatrix fürs Drehen um die Z Achse (Die in den Bildschirm hinein)
 	};
 	const ConstantBuffer cb =
 	{
-		
-		aspectratio * std::cos(angle), -std::sin(angle), 0.0f, 0.0f,		//Mathematische Rotationsmatrix fürs Drehen um die Z Achse (Die in den Bildschirm hinein)
-		aspectratio * std::sin(angle),  std::cos(angle), 0.0f, 0.0f,		//als Const definiert, da sie sich nur zwischen Frames ändert (hier im Code sowieso jeden Frame neuerstellt)
-		           0.0f,             0.0f,  1.0f, 0.0f,
-		           0.0f,             0.0f,  0.0f, 1.0f,
-		
+		{
+			dx::XMMatrixTranspose(
+				dx::XMMatrixTranslation(-0.5f, -0.5f, -0.5f) *
+				dx::XMMatrixRotationX(-transformstruct.rx) *
+				dx::XMMatrixRotationY(-transformstruct.ry) *
+				dx::XMMatrixRotationZ(-transformstruct.rz) *
+				dx::XMMatrixTranslation(transformstruct.x, transformstruct.y, transformstruct.z) *
+				dx::XMMatrixTranslation(0.0f, 0.0f, 4.0f) *
+				dx::XMMatrixPerspectiveLH( 1.0f, aspectratio, 1.0f, 10.0f)
+			)
+		}
 	};
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
 	D3D11_BUFFER_DESC cbd;
@@ -182,7 +198,7 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, float a
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
 	const D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
-		{"Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D10_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
@@ -198,7 +214,7 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, float a
 
 	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), nullptr);
 
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	D3D11_VIEWPORT vp;
 	vp.Width = (float)width;

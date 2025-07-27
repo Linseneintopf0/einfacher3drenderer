@@ -3,6 +3,7 @@
 #include <sstream>
 #include "wcharconv.h"
 #include "resource.h"
+#include "Camera.h"
 
 Window::WindowClass Window::WindowClass::wndClass;
 
@@ -54,8 +55,7 @@ Window::Window(int width, int height, const char* name, const graphicsstruct& sG
 	:
 	height(height),
 	width(width),
-	title(name),
-	angle(0)
+	title(name)
 {
 	RECT wr;
 	wr.left = 100;
@@ -80,6 +80,7 @@ Window::Window(int width, int height, const char* name, const graphicsstruct& sG
 
 	Window::sGfx = &sGfx;
 
+	stf = { 0, 0, 0, 0, 0, 0 };
 	WindowCount++;
 }
 
