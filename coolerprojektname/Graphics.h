@@ -10,20 +10,13 @@
 class Graphics
 {
 public:
-	Graphics(HWND hWnd);
+	Graphics(HWND hWnd, unsigned int height, unsigned int width);
 	Graphics(const Graphics&) = delete;
 	Graphics & operator=(const Graphics&) = delete;
 	~Graphics() = default;
 	void EndFrame();
-	void ClearBuffer(float r, float g, float b) noexcept
-	{
-		const float color[] = { r,g,b,1.0f };
-		pContext->ClearRenderTargetView(pTarget.Get(), color);
-	}
-	void ClearBuffer(const Color* color) noexcept
-	{
-		pContext->ClearRenderTargetView(pTarget.Get(), color->color);
-	}
+	void ClearBuffer(float r, float g, float b) noexcept;
+	void ClearBuffer(const Color* color) noexcept;
 	void DrawTestTriangle(unsigned int width, unsigned int height, Camera::transformstruct transformstruct);
 
 public:
@@ -31,6 +24,7 @@ public:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> pContext;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pTarget;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV;
 
 #pragma region AusnahmeD3D
 

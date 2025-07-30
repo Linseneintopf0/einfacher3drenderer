@@ -75,7 +75,7 @@ Window::Window(int width, int height, const char* name, const graphicsstruct& sG
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 	SetWindowTextA(hWnd , name);
 
-	pGfx = std::make_unique<Graphics>(hWnd);
+	pGfx = std::make_unique<Graphics>(hWnd, height, width);
 	windowlist.push_back(this);
 
 	Window::sGfx = &sGfx;

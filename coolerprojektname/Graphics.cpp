@@ -9,7 +9,7 @@ namespace dx = DirectX; //DirectX Math Library für Mathematische Operationen
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"D3DCompiler.lib")
 
-Graphics::Graphics(HWND hWnd)
+Graphics::Graphics(HWND hWnd, unsigned int height, unsigned int width)
 {
 	DXGI_SWAP_CHAIN_DESC sd = {};
 	sd.BufferDesc.Width = 0;
@@ -60,6 +60,35 @@ Graphics::Graphics(HWND hWnd)
 	);
 
 	if (FAILED(hr)) { throw Graphics::D3DAusnahme(__LINE__, __FILE__, hr); } //throw wenn Fehler
+
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = TRUE;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState;
+
+	pDevice->CreateDepthStencilState(&dsDesc, &pDSState);
+
+	pContext->OMSetDepthStencilState(pDSState.Get(), 1);
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
+	D3D11_TEXTURE2D_DESC descDepth = {};
+	descDepth.Width = width;
+	descDepth.Height = height;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil);
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+	descDSV.Format = DXGI_FORMAT_D32_FLOAT;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &pDSV);
 
 	pBackBuffer->Release();
 }
@@ -226,6 +255,18 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, Camera:
 	pContext->RSSetViewports(1, &vp);
 
 	pContext->DrawIndexed((UINT)std::size(indices), 0, 0);
+}
+
+void Graphics::ClearBuffer(float r, float g, float b) noexcept
+{
+	const float color[] = { r,g,b,1.0f };
+	pContext->ClearRenderTargetView(pTarget.Get(), color);
+	pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+}
+void Graphics::ClearBuffer(const Color* color) noexcept
+{
+	pContext->ClearRenderTargetView(pTarget.Get(), color->color);
+	pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void Graphics::EndFrame()
