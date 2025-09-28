@@ -24,12 +24,6 @@
     <ClCompile Include="Window.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Ausnahmen.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="wcharconv.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="MessageEvaluation.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
@@ -51,12 +45,6 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="windowsexcept.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Ausnahmen.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="wcharconv.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">

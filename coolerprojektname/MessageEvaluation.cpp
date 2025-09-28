@@ -20,12 +20,8 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		}
 		if (WindowCount == 0)
 		{
-			PostQuitMessage(0);
+			PostQuitMessage(69);
 		}
-		break;
-	}
-	case WM_CHAR:
-	{
 		break;
 	}
 	case WM_KEYDOWN:

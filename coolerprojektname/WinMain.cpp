@@ -1,5 +1,4 @@
 #include "window.h"
-#include "wcharconv.h"
 #include "gfxupdate.h"
 #include "Color.h"
 #include "DebugTools.h"
@@ -12,8 +11,6 @@ int CALLBACK WinMain(
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-
-	try {
 
 		//Erstellen von Farben
 		Color white(1.0f, 1.0f, 1.0f, 1);
@@ -32,7 +29,7 @@ int CALLBACK WinMain(
 
 		Window::graphicsstruct tg1;
 			tg1.dateipfad = "TRIANGLE";
-			tg1.colorobj =& aquablue;
+			tg1.colorobj =& black;
 
 
 			if (
@@ -61,17 +58,12 @@ int CALLBACK WinMain(
 				gfxupdate::DoFrame(*Window::windowlist[i]);
 			}
 		}
-	}
-	catch (const Ausnahmen& e)
-	{
-		MessageBoxA(nullptr,e.what(), e.GetType(), MB_OK | MB_ICONERROR);
-	}
-	catch (const std::exception& e)
-	{
-		MessageBoxA(nullptr, e.what(), "Standard Ausnahmefall", MB_OK | MB_ICONERROR);
-	}
-	catch (...)
-	{
-		MessageBoxA(nullptr, "No details available", "Standard Ausnahmefall", MB_OK | MB_ICONERROR);
-	}
+		if (msg.message == WM_QUIT)
+		{
+			return msg.wParam;
+		}
+		else
+		{
+			return 0;
+		}
 }

@@ -46,20 +46,14 @@ Graphics::Graphics(HWND hWnd, unsigned int height, unsigned int width)
 		&pContext
 	);
 
-	if (FAILED(hr)) { throw Graphics::D3DAusnahme(__LINE__, __FILE__, hr); } //throw wenn Fehler
-
 	Microsoft::WRL::ComPtr<ID3D11Resource> pBackBuffer;
 	hr = pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer);
-
-	if (FAILED(hr)) { throw Graphics::D3DAusnahme(__LINE__, __FILE__, hr); } //throw wenn Fehler
 
 	hr = pDevice->CreateRenderTargetView(
 		pBackBuffer.Get(),
 		nullptr,
 		&pTarget
 	);
-
-	if (FAILED(hr)) { throw Graphics::D3DAusnahme(__LINE__, __FILE__, hr); } //throw wenn Fehler
 
 	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
 	dsDesc.DepthEnable = TRUE;
@@ -89,8 +83,6 @@ Graphics::Graphics(HWND hWnd, unsigned int height, unsigned int width)
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
 	pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &pDSV);
-
-	pBackBuffer->Release();
 }
 
 void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, Camera::transformstruct transformstruct)
@@ -142,12 +134,13 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, Camera:
 
 	pDevice->CreateBuffer(&bd, &sd, &pVertexBuffer);		//den Buffer auf dem Device erstellen
 
+
 	const unsigned short indices[] =
 	{
 		0, 3, 1,	0, 2, 3, //down
 		0, 6, 2,	0, 4, 6, //back
 		0, 1, 5,	0, 5, 4, //left
-
+		
 		7, 4, 5,	7, 6, 4, //up
 		7, 5, 1,	7, 1, 3, //front
 		7, 2, 6,	7, 3, 2, //right
@@ -175,13 +168,13 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, Camera:
 	{
 		{
 			dx::XMMatrixTranspose(
-				dx::XMMatrixTranslation(-0.5f, -0.5f, -0.5f) *
-				dx::XMMatrixRotationX(-transformstruct.rx) *
-				dx::XMMatrixRotationY(-transformstruct.ry) *
-				dx::XMMatrixRotationZ(-transformstruct.rz) *
-				dx::XMMatrixTranslation(transformstruct.x, transformstruct.y, transformstruct.z) *
-				dx::XMMatrixTranslation(0.0f, 0.0f, 4.0f) *
-				dx::XMMatrixPerspectiveLH( 1.0f, aspectratio, 1.0f, 10.0f)
+				dx::XMMatrixTranslation(-0.5f, -0.5f, -0.5f)*
+				dx::XMMatrixRotationX(-transformstruct.rx)*
+				dx::XMMatrixRotationY(-transformstruct.ry)*
+				dx::XMMatrixRotationZ(-transformstruct.rz)*
+				dx::XMMatrixTranslation(transformstruct.x, transformstruct.y, transformstruct.z)*
+				dx::XMMatrixTranslation(0.0f, 0.0f, 8.0f)*
+				dx::XMMatrixPerspectiveLH(1.0f, aspectratio, 1.0f, 20.0f)
 			)
 		}
 	};
@@ -228,7 +221,7 @@ void Graphics::DrawTestTriangle(unsigned int width, unsigned int height, Camera:
 	const D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
 		{"Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D10_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		{"Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
 	pDevice->CreateInputLayout(
@@ -273,58 +266,3 @@ void Graphics::EndFrame()
 {
 	pSwap->Present(1, 0);
 }
-
-#pragma region AusnahmeRegelung
-
-Graphics::D3DAusnahme::D3DAusnahme(int line, const char* file, HRESULT hr) noexcept
-	:
-	Ausnahmen(line, file),
-	hr(hr)
-{
-}
-
-const char* Graphics::D3DAusnahme::what() const noexcept
-{
-	std::ostringstream oss;
-	oss << GetType() << std::endl
-		<< "Error Code: " << GetErrorCode() << std::endl
-		<< "Description: " << GetErrorString() << std::endl
-		<< GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
-}
-
-const char* Graphics::D3DAusnahme::GetType() const noexcept
-{
-	return "Fenster Ausnahme";
-}
-
-std::string Graphics::D3DAusnahme::TranslateErrorCode(HRESULT hr) noexcept
-{
-	char* pErrorString = nullptr;
-	DWORD diStringLength = FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<LPSTR>(&pErrorString),
-		0, nullptr);
-	if (diStringLength == 0)
-	{
-		return "Unbekannter Code";
-	}
-	std::string errorString = pErrorString;
-	LocalFree(pErrorString);
-	return errorString;
-}
-
-HRESULT Graphics::D3DAusnahme::GetErrorCode() const noexcept
-{
-	return hr;
-}
-
-std::string Graphics::D3DAusnahme::GetErrorString() const noexcept
-{
-	return TranslateErrorCode(hr);
-}
-
-#pragma endregion

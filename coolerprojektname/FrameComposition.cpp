@@ -1,7 +1,6 @@
 #include "Graphics.h"
 #include "Window.h"
 #include "gfxupdate.h"
-#include "Ausnahmen.h"
 #include <sstream>
 #include "Camera.h"
 
@@ -50,58 +49,3 @@ void gfxupdate::DoFrame(Window &wnd)
 	}
 	wnd.pGraphics().EndFrame();
 }
-
-#pragma region AusnahmeRegelung
-
-gfxupdate::GfxAusnahme::GfxAusnahme(int line, const char* file, HRESULT hr) noexcept
-	:
-	Ausnahmen(line, file),
-	hr(hr)
-{
-}
-
-const char* gfxupdate::GfxAusnahme::what() const noexcept
-{
-	std::ostringstream oss;
-	oss << GetType() << std::endl
-		<< "Error Code: " << GetErrorCode() << std::endl
-		<< "Description: " << GetErrorString() << std::endl
-		<< GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
-}
-
-const char* gfxupdate::GfxAusnahme::GetType() const noexcept
-{
-	return "Fenster Ausnahme";
-}
-
-std::string gfxupdate::GfxAusnahme::TranslateErrorCode(HRESULT hr) noexcept
-{
-	char* pErrorString = nullptr;
-	DWORD diStringLength = FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<LPSTR>(&pErrorString),
-		0, nullptr);
-	if (diStringLength == 0)
-	{
-		return "Unbekannter Code";
-	}
-	std::string errorString = pErrorString;
-	LocalFree(pErrorString);
-	return errorString;
-}
-
-HRESULT gfxupdate::GfxAusnahme::GetErrorCode() const noexcept
-{
-	return hr;
-}
-
-std::string gfxupdate::GfxAusnahme::GetErrorString() const noexcept
-{
-	return TranslateErrorCode(hr);
-}
-
-#pragma endregion

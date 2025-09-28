@@ -135,25 +135,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Ausnahmen.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="FrameComposition.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="DebugTools.cpp" />
     <ClCompile Include="MessageEvaluation.cpp" />
-    <ClCompile Include="wcharconv.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Ausnahmen.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="gfxupdate.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="DebugTools.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="wcharconv.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="windowsexcept.h" />
   </ItemGroup>

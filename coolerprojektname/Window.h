@@ -1,7 +1,7 @@
 #pragma once
 #include "windowsexcept.h"
-#include "Ausnahmen.h"
 #include "Graphics.h"
+#include <string>
 #include <memory>
 #include <vector>
 #include "Color.h"
@@ -19,19 +19,6 @@ public:
 	};
 	const graphicsstruct* sGfx;
 	Camera::transformstruct stf;
-public:
-	class WindowAusnahme : public Ausnahmen
-	{
-	public:
-		WindowAusnahme(int line, const char* file, HRESULT hr) noexcept;
-		const char* what() const noexcept override;
-		virtual const char* GetType() const noexcept override;
-		static std::string TranslateErrorCode(HRESULT hr) noexcept;
-		HRESULT GetErrorCode() const noexcept;
-		std::string GetErrorString() const noexcept;
-	private:
-		HRESULT hr;
-	};
 private:
 	class WindowClass
 	{
@@ -68,5 +55,3 @@ public:
 	static unsigned long WindowCount;									//Number of current Windows (to dynamically add and close them, and stop the program when this is 0
 	static std::vector<Window*> windowlist;								//Vector with pointers to every Window Instance (for looping over in Graphical uses)
 };
-
-#define WINDOWAUSNAHME(hr) Window::WindowAusnahme(__LINE__,__FILE__,hr)

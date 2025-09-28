@@ -1,7 +1,6 @@
 #include "Window.h"
 #include <string>
 #include <sstream>
-#include "wcharconv.h"
 #include "resource.h"
 #include "Camera.h"
 
@@ -73,7 +72,7 @@ Window::Window(int width, int height, const char* name, const graphicsstruct& sG
 	);
 
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	SetWindowTextA(hWnd , name);
+	SetWindowTextA(hWnd, (char*)&title[0]);
 
 	pGfx = std::make_unique<Graphics>(hWnd, height, width);
 	windowlist.push_back(this);
@@ -130,60 +129,6 @@ LRESULT WINAPI Window::HandleMsgAPICon(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 {
 	Window* const pWindow = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));				//der pointer zu dem Fenster wird extrahiert aus der WinAPI
 	return pWindow->HandleMsg(hWnd, msg, wParam, lParam);													//aus diesem Pointer wird die HandleMsg Funktion als pointer returnt (und ausgeführt)
-}
-
-#pragma endregion
-
-#pragma region Ausnahenregelung
-
-Window::WindowAusnahme::WindowAusnahme(int line, const char* file, HRESULT hr) noexcept
-	:
-	Ausnahmen(line, file),
-	hr(hr)
-{}
-
-const char* Window::WindowAusnahme::what() const noexcept
-{
-	std::ostringstream oss;
-	oss << GetType() << std::endl
-		<< "Error Code: " << GetErrorCode() << std::endl
-		<< "Description" << GetErrorString() << std::endl
-		<< GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
-}
-
-const char* Window::WindowAusnahme::GetType() const noexcept
-{
-	return "Fenster Ausnahme";
-}
-
-std::string Window::WindowAusnahme::TranslateErrorCode(HRESULT hr) noexcept
-{
-	char* pErrorString = nullptr;
-	DWORD diStringLength = FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<LPSTR>(&pErrorString),
-		0, nullptr);
-	if (diStringLength == 0)
-	{
-		return "Unbekannter Code";
-	}
-	std::string errorString = pErrorString;
-	LocalFree(pErrorString);
-	return errorString;
-}
-
-HRESULT Window::WindowAusnahme::GetErrorCode() const noexcept
-{
-	return hr;
-}
-
-std::string Window::WindowAusnahme::GetErrorString() const noexcept
-{
-	return TranslateErrorCode(hr);
 }
 
 #pragma endregion
