@@ -40,7 +40,7 @@ void gfxupdate::DoFrame(Window &wnd)
 		wnd.stf.ry = Camera::RotationLoop(wnd.stf.ry);
 		wnd.stf.rz = Camera::RotationLoop(wnd.stf.rz);
 
-		//wnd.pGraphics().ClearBuffer(wnd.sGfx->colorobj);
+		wnd.pGraphics().ClearBuffer(wnd.sGfx->colorobj);
 		wnd.pGraphics().DrawTestTriangle(wnd.width, wnd.height, wnd.stf);
 	}
 	else
