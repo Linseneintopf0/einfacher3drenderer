@@ -30,7 +30,7 @@
     <ClCompile Include="Graphics.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="FrameComposition.cpp">
+    <ClCompile Include="Scene.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Color.cpp">
@@ -53,7 +53,7 @@
     <ClInclude Include="Graphics.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="gfxupdate.h">
+    <ClInclude Include="Scene.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Color.h">

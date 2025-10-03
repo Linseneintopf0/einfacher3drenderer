@@ -1,5 +1,5 @@
 #include "window.h"
-#include "gfxupdate.h"
+#include "Scene.h"
 #include "Color.h"
 #include "DebugTools.h"
 #include <iostream>
@@ -28,8 +28,8 @@ int CALLBACK WinMain(
 			bg2.colorobj =& aquablue;
 
 		Window::graphicsstruct tg1;
-			tg1.dateipfad = "TRIANGLE";
-			tg1.colorobj =& black;
+			tg1.dateipfad = "CUBE";
+			tg1.colorobj =& white;
 
 
 			if (
@@ -48,6 +48,10 @@ int CALLBACK WinMain(
 		MSG msg;
 		msg.message = NULL;
 		BOOL bPMResult;
+		for (unsigned int i = 0; i < Window::WindowCount; i++)
+		{
+			Scene::SetupFrame(*Window::windowlist[i]);
+		}
 		while (msg.message != WM_QUIT)
 		{
 			bPMResult = PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
@@ -55,7 +59,7 @@ int CALLBACK WinMain(
 			DispatchMessageA(&msg);
 			for (unsigned int i = 0; i < Window::WindowCount; i++)
 			{
-				gfxupdate::DoFrame(*Window::windowlist[i]);
+				Scene::DoFrame(*Window::windowlist[i]);
 			}
 		}
 		if (msg.message == WM_QUIT)

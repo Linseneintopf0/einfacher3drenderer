@@ -136,7 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Color.cpp" />
-    <ClCompile Include="FrameComposition.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="DebugTools.cpp" />
     <ClCompile Include="MessageEvaluation.cpp" />
@@ -146,7 +146,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
-    <ClInclude Include="gfxupdate.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="DebugTools.h" />
     <ClInclude Include="resource.h" />

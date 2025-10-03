@@ -1,8 +1,9 @@
 #pragma once
 #include "window.h"
 
-class gfxupdate
+class Scene
 {
 public:
 	static void DoFrame(Window &wnd);
+	static void SetupFrame(Window& wnd);
 };
