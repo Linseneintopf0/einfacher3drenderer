@@ -1,7 +1,6 @@
 #include "Graphics.h"
 #include "Window.h"
 #include "Scene.h"
-#include <sstream>
 #include "Camera.h"
 
 void Scene::DoFrame(Window &wnd)
@@ -24,6 +23,13 @@ void Scene::DoFrame(Window &wnd)
 
 void Scene::SetupFrame(Window &wnd) 
 {
+	//Model Data Variables
+	Graphics::Vertex* pVertices = nullptr;
+	Graphics::Index* pIndices = nullptr;
+	unsigned short vertexcount = 0;
+	unsigned short trianglecount = 0;
+
+	//If Liste für Modelldaten
 	if (wnd.sGfx->dateipfad == "")
 	{
 		
@@ -44,7 +50,6 @@ void Scene::SetupFrame(Window &wnd)
 			{ 1.0f,  0.0f, 1.0f,   0, 255,   0,   0},	//5 grün
 			{ 0.0f,  1.0f, 1.0f,   0, 255,   0,   0},	//6 grün
 			{ 1.0f,  1.0f, 1.0f,   0,   0, 255,   0},	//7 blau
-			{ 1.0f,  3.0f, 1.0f,   0,   0, 255,   0},	//8 blau
 		};
 
 		Graphics::Index indices[] =
@@ -56,18 +61,16 @@ void Scene::SetupFrame(Window &wnd)
 			{7, 4, 5,},	{7, 6, 4,},		//up
 			{7, 5, 1,},	{7, 1, 3,},		//front
 			{7, 2, 6,},	{7, 3, 2,},		//right
-			{8, 7, 6}
 		};
 
-		unsigned short trianglecount = sizeof(indices) / sizeof(indices[0]);
-		unsigned short vertexcount = sizeof(vertices) / sizeof(vertices[0]);
-
-		wnd.pGraphics().SetupVertexAndIndexBuffer(indices, vertices, trianglecount, vertexcount);
-		wnd.pGraphics().SetupConstantBufferAndShaders();
-		wnd.pGraphics().SetupOutputmerger(wnd.width, wnd.height);
+		pVertices = &vertices[0];
+		pIndices = &indices[0];
+		trianglecount = sizeof(indices) / sizeof(Graphics::Index);
+		vertexcount = sizeof(vertices) / sizeof(Graphics::Vertex);
 	}
-	else
-	{
 
-	}
+	//Setup Befehle
+	wnd.pGraphics().SetupVertexAndIndexBuffer(pIndices, pVertices, trianglecount, vertexcount);
+	wnd.pGraphics().SetupConstantBufferAndShaders();
+	wnd.pGraphics().SetupOutputmerger(wnd.width, wnd.height);
 }

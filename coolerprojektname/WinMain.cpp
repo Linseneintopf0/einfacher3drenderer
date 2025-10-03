@@ -19,14 +19,6 @@ int CALLBACK WinMain(
 
 
 		//Erstellen von Grafik Strukturen:
-		Window::graphicsstruct bg1;
-			bg1.dateipfad = "";				//DateiPfad (Wenn leer nur Hintergrund) oder KEYWORD (z.B. RAINBOW)
-			bg1.colorobj =& black;			//Farbe für den Hintergrund (muss als Pointer weiter gegeben werden)
-
-		Window::graphicsstruct bg2;
-			bg2.dateipfad = "RAINBOW";
-			bg2.colorobj =& aquablue;
-
 		Window::graphicsstruct tg1;
 			tg1.dateipfad = "CUBE";
 			tg1.colorobj =& white;
@@ -36,22 +28,21 @@ int CALLBACK WinMain(
 				false					   //Message Pump in LogWindow? true/false
 				){Outputlog::AttachConsoleWindow();}
 
-
 		Window* wnd1 = new Window(
-			800,							//Breite des Fensters
-			600,							//Höhe des Fensters
-			"Window one",					//Name des Fensters
-			tg1);							//Name einer Grafikstruktur
+			0,							//Breite des Fensters
+			0,							//Höhe des Fensters
+			"Window one",				//Name des Fensters
+			tg1);						//Name einer Grafikstruktur
 
-
-
-		MSG msg;
-		msg.message = NULL;
-		BOOL bPMResult;
+		//DirectX gedöns Erstellen
 		for (unsigned int i = 0; i < Window::WindowCount; i++)
 		{
 			Scene::SetupFrame(*Window::windowlist[i]);
 		}
+
+		MSG msg;
+		msg.message = NULL;
+		BOOL bPMResult;
 		while (msg.message != WM_QUIT)
 		{
 			bPMResult = PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
@@ -64,7 +55,7 @@ int CALLBACK WinMain(
 		}
 		if (msg.message == WM_QUIT)
 		{
-			return msg.wParam;
+			return (int)msg.wParam;
 		}
 		else
 		{

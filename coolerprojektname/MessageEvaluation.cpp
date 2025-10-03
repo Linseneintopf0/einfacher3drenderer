@@ -34,6 +34,22 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		Window::currentpressedkey = 0;
 		break;
 	}
+	case WM_SIZE:
+	{
+		for (size_t i = 0; i < Window::windowlist.size(); i++)
+		{
+			if (Window::windowlist[i]->hWnd == hWnd)
+			{
+				Window* foundwindow = Window::windowlist[i];
+				RECT wr;
+				GetWindowRect(hWnd, &wr);
+				foundwindow->width = wr.right - wr.left;
+				foundwindow->height = wr.bottom - wr.top;
+				foundwindow->pGraphics().UpdateAspectratio(foundwindow->width,foundwindow->height);
+			}
+		}
+		break;
+	}
 	}
 
 	std::cout << Outputlog::msgIdConv(msg) << " " << " " << wParam << " " << lParam << std::endl;

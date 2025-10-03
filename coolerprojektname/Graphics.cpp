@@ -202,7 +202,8 @@ void Graphics::SetupOutputmerger(unsigned short width, unsigned short height)
 	descDSV.Texture2D.MipSlice = 0;
 	pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &pDepthStencilView);
 
-	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDepthStencilView.Get());
+	//pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDepthStencilView.Get());
+	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), nullptr);
 
 #pragma endregion
 
@@ -218,6 +219,26 @@ void Graphics::SetupOutputmerger(unsigned short width, unsigned short height)
 	pContext->RSSetViewports(1, &vp);
 
 #pragma endregion
+}
+
+void Graphics::UpdateAspectratio(unsigned short width, unsigned short height)
+{
+	//Render Target entfernen
+	pContext->OMSetRenderTargets(0, 0, 0);
+	//Render Target Pointer leeren
+	pTarget = nullptr;
+	//Swap-Chain Buffer anpassen
+	pSwap->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+
+	//Alte Swap-Chain-Buffer einstellungen kriegen
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> pBuffer;
+	pSwap->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBuffer);
+
+	//Render Target wieder deklarieren
+	pDevice->CreateRenderTargetView(pBuffer.Get(), NULL, pTarget.GetAddressOf());
+
+	//Depth Stencil und Viewport wieder anpassen
+	Graphics::SetupOutputmerger(width, height);
 }
 
 void Graphics::UpdateConstantBuffer(unsigned short width, unsigned short height, Camera::transformstruct transformstruct)
@@ -259,7 +280,7 @@ void Graphics::Draw()
 {
 	D3D11_BUFFER_DESC ibd;
 	pIndexBuffer->GetDesc(&ibd);
-	pContext->DrawIndexed(3*(ibd.ByteWidth/2), 0, 0);
+	pContext->DrawIndexed(3*(ibd.ByteWidth/sizeof(unsigned short)), 0, 0);
 }
 
 void Graphics::ClearBuffer(float r, float g, float b) noexcept

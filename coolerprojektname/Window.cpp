@@ -4,8 +4,10 @@
 #include "resource.h"
 #include "Camera.h"
 
+//Definition des statischen Window::WindowClass Objekts
 Window::WindowClass Window::WindowClass::wndClass;
 
+//Definition der Statischen Variablen
 unsigned long Window::WindowCount = 0;
 std::vector<Window*> Window::windowlist = {};
 
@@ -15,6 +17,7 @@ Window::WindowClass::WindowClass() noexcept
 	:
 	hInst(GetModuleHandle(nullptr))
 {
+	//Window Class Einstellungen
 	WNDCLASSEXA wc = { 0 };
 	wc.cbSize = sizeof(wc);
 	wc.style = CS_OWNDC;
@@ -50,36 +53,53 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept
 
 #pragma region Window Shenanigans
 
-Window::Window(int width, int height, const char* name, const graphicsstruct& sGfx) noexcept
+Window::Window(unsigned short width, unsigned short height, const char* name, const graphicsstruct& sGfx) noexcept
 	:
 	height(height),
 	width(width),
-	title(name)
+	title(name),
+	sGfx(&sGfx)
 {
 	RECT wr;
-	wr.left = 100;
-	wr.right = width + wr.left;
-	wr.top = 100;
-	wr.bottom = height + wr.top;
+	int maximize = NULL; //Maximieren des Fensters, wenn Fensterdimension außerhalb der gültigen Dimensionen ist
 
-	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
+	//Erstellen eines Rechtecks, der Größe des Fensters
+	wr.left = 0;
+	wr.top = 0;
+	if	((height == 0 && width == 0) || 
+		(height > GetSystemMetrics(SM_CYFULLSCREEN) && width > GetSystemMetrics(SM_CXFULLSCREEN))) {
+		Window::height = GetSystemMetrics(SM_CYFULLSCREEN)-100;
+		Window::width = GetSystemMetrics(SM_CXFULLSCREEN)-500;
+		maximize = WS_MAXIMIZE;
+	}
+	wr.right = Window::width + wr.left;
+	wr.bottom = Window::height + wr.top;
 
+	//Adjustieren des Rechtecks an die vorhandene Menüleiste
+	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX| WS_SYSMENU, FALSE);
+
+	//Fenster erstellen
 	hWnd = CreateWindowExA(0,
 		WindowClass::GetName(), name,
-		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
+		WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_VISIBLE | maximize,
 		CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
 		NULL, NULL, WindowClass::GetInstance(), this
 	);
 
-	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	if (maximize) {
+		GetWindowRect(hWnd, &wr);
+		Window::height = wr.bottom - wr.top;
+		Window::width = wr.right - wr.left;
+	}
+
+	//Fenstertitel korrigieren (keine Ahnung warum der beim Erstellen nicht richtig ist)
 	SetWindowTextA(hWnd, (char*)&title[0]);
 
+	//Erstellen des Graphics Objektes
 	pGfx = std::make_unique<Graphics>(hWnd);
+
+	//Window Pointer Management
 	windowlist.push_back(this);
-
-	Window::sGfx = &sGfx;
-
-	stf = { 0, 0, 0, 0, 0, 0 };
 	WindowCount++;
 }
 

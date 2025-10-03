@@ -44,8 +44,9 @@ public:
 	void EndFrame();
 	void SetupVertexAndIndexBuffer(Graphics::Index* indices, Graphics::Vertex* vertices, unsigned short trianglecount, unsigned short vertexcount);
 	void SetupConstantBufferAndShaders();
-	void UpdateConstantBuffer(unsigned short width, unsigned short height, Camera::transformstruct transformstruct);
 	void SetupOutputmerger(unsigned short width, unsigned short height);
+	void UpdateAspectratio(unsigned short width, unsigned short height);
+	void UpdateConstantBuffer(unsigned short width, unsigned short height, Camera::transformstruct transformstruct);
 
 	void Draw();
 	void ClearBuffer(float r, float g, float b) noexcept;

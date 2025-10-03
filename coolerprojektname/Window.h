@@ -15,10 +15,10 @@ public:
 	//Jedes Fenster hat eine graphicstuct, die hier declariert ist
 	struct graphicsstruct {
 		mutable std::string dateipfad;
-		const Color* colorobj;
+		const Color* colorobj = nullptr;
 	};
 	const graphicsstruct* sGfx;
-	Camera::transformstruct stf;
+	Camera::transformstruct stf = {0,0,0,0,0,0};
 private:
 	class WindowClass
 	{
@@ -28,17 +28,20 @@ private:
 	private:
 		WindowClass() noexcept;
 		~WindowClass();
+
 		WindowClass(const WindowClass&) = delete;						//verhindert kopieren von Objekten der Klasse "WindowClass", durch 'WindowClass kopie(original);'
 		WindowClass& operator=(const WindowClass&) = delete;			//verhindert kopieren von Objekten der Klasse "WindowClass", durch 'Windowclass kopie = original;'
+
 		static constexpr const char* wndClassName = "ersteklasse";		//Name der WindowClass
 		static WindowClass wndClass;									//erzeugt Objekt "wndClass"
+
 		HINSTANCE hInst;												//erzeugt variable "hInst" als HINSTANCE
 	};
 public:
-	Window(int width, int height, const char* name, const graphicsstruct &sGfx) noexcept;		//constructor (duh)
-	~Window();																				//destructer (duh duh)
-	Window(const Window&) = delete;															//verhindert kopieren von Objekten der Klasse "Window", durch 'Window kopie(original);'
-	Window& operator=(const Window&) = delete;												//verhindert kopieren von Objekten der Klasse "Window", durch 'Window kopie = original;'
+	Window(unsigned short width, unsigned short height, const char* name, const graphicsstruct &sGfx) noexcept;		//constructor (duh)
+	~Window();																										//destructer (duh duh)
+	Window(const Window&) = delete;																					//verhindert kopieren von Objekten der Klasse "Window", durch 'Window kopie(original);'
+	Window& operator=(const Window&) = delete;																		//verhindert kopieren von Objekten der Klasse "Window", durch 'Window kopie = original;'
 	Graphics& pGraphics();
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
