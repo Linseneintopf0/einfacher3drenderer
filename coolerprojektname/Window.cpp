@@ -3,6 +3,7 @@
 #include <sstream>
 #include "resource.h"
 #include "Camera.h"
+#include "Scene.h"
 
 //Definition des statischen Window::WindowClass Objekts
 Window::WindowClass Window::WindowClass::wndClass;
@@ -97,6 +98,7 @@ Window::Window(unsigned short width, unsigned short height, const char* name, co
 
 	//Erstellen des Graphics Objektes
 	pGfx = std::make_unique<Graphics>(hWnd);
+	pScene = std::make_unique<Scene>(*this);
 
 	//Window Pointer Management
 	windowlist.push_back(this);

@@ -20,8 +20,9 @@ int CALLBACK WinMain(
 
 		//Erstellen von Grafik Strukturen:
 		Window::graphicsstruct tg1;
-			tg1.dateipfad = "CUBE";
-			tg1.colorobj =& white;
+			tg1.dateipfad = "teapot.obj"; //!!Ausschließlich ASCII/UTF-8 Zeichen!!
+			tg1.colorobj =& white; //Hintergrundfarbe
+			tg1.scale = 3; //Korrekturlevel für Risse im Model
 
 
 			if (
@@ -35,11 +36,6 @@ int CALLBACK WinMain(
 			tg1);						//Name einer Grafikstruktur
 
 		//DirectX gedöns Erstellen
-		for (unsigned int i = 0; i < Window::WindowCount; i++)
-		{
-			Scene::SetupFrame(*Window::windowlist[i]);
-		}
-
 		MSG msg;
 		msg.message = NULL;
 		BOOL bPMResult;

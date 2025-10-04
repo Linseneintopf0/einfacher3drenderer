@@ -1,8 +1,9 @@
 #include "Graphics.h"
 #include <sstream>
+#include <DirectXMath.h>
+#include <cmath>
 #include "windowsexcept.h"
 #include <d3dcompiler.h>
-#include <DirectXMath.h>
 
 namespace dx = DirectX; //DirectX Math Library für Mathematische Operationen
 
@@ -89,13 +90,13 @@ void Graphics::SetupVertexAndIndexBuffer(Graphics::Index* indices, Graphics::Ver
 	ibd.CPUAccessFlags = 0;
 	ibd.MiscFlags = 0;
 	ibd.ByteWidth = trianglecount * sizeof(Graphics::Index);
-	ibd.StructureByteStride = sizeof(unsigned short);
+	ibd.StructureByteStride = sizeof(unsigned int);
 
 	D3D11_SUBRESOURCE_DATA isd = {};
 	isd.pSysMem = indices;
 
 	pDevice->CreateBuffer(&ibd, &isd, &pIndexBuffer);
-	pContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	pContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 #pragma endregion
 
@@ -264,7 +265,7 @@ void Graphics::UpdateConstantBuffer(unsigned short width, unsigned short height,
 				dx::XMMatrixRotationZ(-transformstruct.rz) *
 				dx::XMMatrixTranslation(transformstruct.x, transformstruct.y, transformstruct.z) *
 				dx::XMMatrixTranslation(0.0f, 0.0f, 8.0f) *
-				dx::XMMatrixPerspectiveLH(1.0f, aspectratio, 1.0f, 20.0f)
+				dx::XMMatrixPerspectiveLH(1.0f, aspectratio, 1.0f, 200.0f)
 			)
 		}
 	};
@@ -280,7 +281,7 @@ void Graphics::Draw()
 {
 	D3D11_BUFFER_DESC ibd;
 	pIndexBuffer->GetDesc(&ibd);
-	pContext->DrawIndexed(3*(ibd.ByteWidth/sizeof(unsigned short)), 0, 0);
+	pContext->DrawIndexed(3*(ibd.ByteWidth/sizeof(unsigned int)), 0, 0);
 }
 
 void Graphics::ClearBuffer(float r, float g, float b) noexcept

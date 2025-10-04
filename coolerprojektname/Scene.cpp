@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "Scene.h"
 #include "Camera.h"
+#include "objfileimport.h"
 
 void Scene::DoFrame(Window &wnd)
 {
@@ -21,18 +22,15 @@ void Scene::DoFrame(Window &wnd)
 	wnd.pGraphics().EndFrame();
 }
 
-void Scene::SetupFrame(Window &wnd) 
+Scene::Scene(Window& wnd)
+	:
+	scale(wnd.sGfx->scale)
 {
-	//Model Data Variables
-	Graphics::Vertex* pVertices = nullptr;
-	Graphics::Index* pIndices = nullptr;
-	unsigned short vertexcount = 0;
-	unsigned short trianglecount = 0;
-
 	//If Liste für Modelldaten
 	if (wnd.sGfx->dateipfad == "")
 	{
-		
+		Graphics::Vertex vertices = {1.0f, 1.0f, 1.0f, 0, 0, 0, 0};
+		Graphics::Index indices = { 0, 0, 0 };
 	}
 	else if (wnd.sGfx->dateipfad == "RAINBOW")
 	{
@@ -67,6 +65,19 @@ void Scene::SetupFrame(Window &wnd)
 		pIndices = &indices[0];
 		trianglecount = sizeof(indices) / sizeof(Graphics::Index);
 		vertexcount = sizeof(vertices) / sizeof(Graphics::Vertex);
+	}
+	//.obj Modelle
+	else 
+	{
+		//OBJ File Test
+		if (objfileimport::isobjfile(wnd.sGfx->dateipfad))
+		{
+			objfileimport objfile(wnd.sGfx->dateipfad, *this); //erstellen eine obj Objektes wenn die Bedingungen gelten
+			pVertices = vertices.get();
+			pIndices = indices.get();
+			vertexcount = objfile.vertexcount;
+			trianglecount = objfile.trianglecount;
+		}
 	}
 
 	//Setup Befehle

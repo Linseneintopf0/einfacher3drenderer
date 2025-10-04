@@ -7,6 +7,7 @@
 #include "Color.h"
 #include "Camera.h"
 
+class Scene;
 class Graphics;
 class Window
 {
@@ -16,9 +17,11 @@ public:
 	struct graphicsstruct {
 		mutable std::string dateipfad;
 		const Color* colorobj = nullptr;
+		int scale = 0;
 	};
 	const graphicsstruct* sGfx;
 	Camera::transformstruct stf = {0,0,0,0,0,0};
+
 private:
 	class WindowClass
 	{
@@ -50,6 +53,7 @@ private:
 private:
 	HWND hWnd;
 	std::unique_ptr<Graphics> pGfx;
+	std::unique_ptr<Scene> pScene;
 	mutable std::string title;
 public:
 	WPARAM currentpressedkey = 0;

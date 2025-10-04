@@ -30,9 +30,9 @@ public:
 	{
 		struct
 		{
-			const unsigned short a;
-			const unsigned short b;
-			const unsigned short c;
+			unsigned int a;
+			unsigned int b;
+			unsigned int c;
 		} corners;
 	};
 
