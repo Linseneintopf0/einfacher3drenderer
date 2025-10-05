@@ -42,18 +42,19 @@ objfileimport::objfileimport(std::string& filename, Scene &scene)
 		if (currentline[0] == 'v' && currentline[1] == ' ') //wenn die Zeile einen Vertex enthält:
 		{
 			float x, y, z; //x, y, z Koordinatenvariablen
+			size_t size = 0; //Größe der Zahl -> wird per pointer zrückgegeben
 			currentline.erase(0, 2); //das "v " entfernen
 			std::string copyofline = currentline; //eine Kopie von der Zeile machen
 		
-			x = findnumberfloat(copyofline, scene.scale); //x durch den Zahlalgrorithmus werfen (reduziert copyofline zu den relevanten Zahlen)
-			(x < 0) ? currentline.erase(0, copyofline.length() + 3) : currentline.erase(0, copyofline.length() + 2);  //Zahl entfernen (das Leerzeichen, den Dezimalpunkt und das Minuszeichen (wenn Vorhanden))
+			x = findnumberfloataccurate(copyofline, size); //x durch den Zahlalgrorithmus werfen (reduziert copyofline zu den relevanten Zahlen)
+			currentline.erase(0, size); //size wurde als Länger der ersten Zahl zurück gegeben -> entfernen dieser ersten Zahl
 			copyofline = currentline; //die Kopie auf die nächste Zahl zurück setzen
 		
-			y = findnumberfloat(copyofline, scene.scale); //der ganze Spaß für y
-			(y < 0) ? currentline.erase(0, copyofline.length() + 3) : currentline.erase(0, copyofline.length() + 2);
+			y = findnumberfloataccurate(copyofline, size); //der ganze Spaß für y
+			currentline.erase(0, size);
 			copyofline = currentline;
 		
-			z = findnumberfloat(copyofline, scene.scale); //der ganze Spaß für z
+			z = findnumberfloataccurate(copyofline, size); //der ganze Spaß für z
 		
 			scene.vertices[iVertex] = { x, y, z, 0, 0, 0, 0 }; //die Vertex Struktur vervollständigen und Appenden
 			iVertex++; //Iterator Variable
@@ -92,52 +93,59 @@ bool objfileimport::isobjfile(std::string& filename)
 	return (comparestring == "jbo.") ? true : false; //wenn reversefileformat "jbo." gilt, dann ist das Ende der Datei .obj
 }
 
-float objfileimport::findnumberfloat(std::string& line, int scale)
+float objfileimport::findnumberfloataccurate(std::string& line, size_t& size) 
 {
-	size_t decimalpoint = 0;
-	double returnfloat = 0;
-	bool signbit = false;
+	unsigned char signbit = 0; //signbit ist eine Zahl, weil es auch, wenn es 1 ist als Startwert von Zählschleifen dient -> ignorieren des '-'
+	size_t decimalpoint = 0; //Stelle des Komma
+	size_t numberlength = 0; //Iterator und Speicher der Nummernlänge (wichtig für Exponent)
+
+	unsigned int afterkommadigits = 0; //Nachkommazahlen gepeichert als Nachkommazahlen*10^(Zahlenlänge) -> Integer, keine Float (Fehleranfälliger)
+	unsigned int beforecommadigits = 0; //Integer der Vorkommastellen
 
 	if (line[0] == '-')
 	{
-		signbit = true;
-		line.erase(0, 1);
+		signbit = 1; //Wenn ein Minus am Anfang steht -> negativer Returnwert -> effizienter und ermöglicht die folgenden Methoden
 	}
 
-	for (size_t i = 0; i < line.length(); i++) //durch die Kopie iterieren, bis zum ersten Leerzeichen
+	for (numberlength = signbit; numberlength < line.length(); numberlength++) //iterieren mit numberlength über die Zeile
 	{
-		if (decimalpoint) //wenn decimalpoint != 0 gilt, dann werden die Nachkommastellen gebildet -> verhindert doppeltes iterieren über diese Zahlen
+		if (line[numberlength] == '.') //bei dem Punkt der Kommazahl, die Position merken
 		{
-			if ((unsigned char)line[i] != 0) //Berechnung von 0 ignorieren -> erzeugt sowieso 0 im output
-			{
-				returnfloat = returnfloat + (double)((unsigned char)line[i] - 48) * std::pow(10.0, ((double)decimalpoint - (double)i + (double)scale));  //Bit-shift der '0' und berechnung der Dezimalzahl
-			}
+			decimalpoint = numberlength;
 		}
-		if (line[i] == '.') //markieren der Kommastelle -> nach der Berechnung weil sonst '.' berechnet werden würde -> Bit-Shift throwt
+		else if (line[numberlength] == ' ') //bei einem Leerzeichen abbrechen
 		{
-			decimalpoint = i;
-		}
-		if (line[i] == ' ') //abbruch wenn Leerzeichen -> beginn nächster Zahl
-		{
-			line.erase(i, line.length() - i);
+			line.erase(numberlength, line.length() - numberlength);
 			break;
 		}
-	}
-	if (returnfloat < 0) 
-	{ 
-		returnfloat = -returnfloat; 
-	}
-	line.erase(decimalpoint,1); //das Komma '.' entfernen
-	for (int i = 0; i < (int)decimalpoint; i++) //über die Vorkommastellen iterieren
-	{
-		if ((unsigned char)line[i] != '0') //Berechnung für 0 ignorieren
+		else if (decimalpoint) //wenn ein Dezimalpunkt gefunden wurde -> Zahlen in int wandeln
 		{
-			returnfloat = returnfloat + (double)((unsigned char)line[i] - 48) * std::pow(10.0, ((double)decimalpoint - (double)i - 1.0 + (double)scale)); //Bit-shift der '0' und berechnung der Dezimalzahl
+			afterkommadigits = afterkommadigits * 10 + (unsigned char)(line[numberlength] - 48); //alte Zahl mit 10 multiplizieren, dann aktuell gelsene Zahl addieren
 		}
 	}
-	returnfloat = returnfloat / std::pow(10, scale);
-	if (signbit) { return (float)-returnfloat; }
-	return (float)returnfloat;
+
+	numberlength--; //das Leerzeichen am Ende zählt nicht zur Zahlen länge
+
+	for (size_t i = signbit; i < decimalpoint; i++)
+	{
+		beforecommadigits = beforecommadigits + (unsigned char)(line[i] - 48) * std::pow(10, i - signbit);
+		///bilden der Vorkommastellen "std::pow(10, i-signbit)"
+		///steht für 10^(aktuelle 10er Potenz) -> durch addieren 
+		///des Signbit im Iterator, hier entfernen
+	}
+
+	float returnfloat = beforecommadigits; //erstellen der return Float mit den Vorkommastellen
+	int exp = decimalpoint - numberlength; //bilden des Exponent -> "negative Nummernlänge + decimal Punkt" entspricht "decimalpunkt - numernlänge"
+
+	returnfloat = returnfloat + std::pow(10.0, (double)(exp)) * afterkommadigits; //addieren der Nachkommazahlen -> Kommazahl wird gebildet
+
+	size = line.length()+1; //returnen der Länge
+
+	if (signbit)
+	{
+		return -returnfloat; //returnen der negativen Werte
+	}
+	return returnfloat; //returnen aller anderen Werte (positive Floats)
 }
 
 unsigned int objfileimport::findnumberuint(std::string& line)

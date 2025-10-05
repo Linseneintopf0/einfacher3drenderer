@@ -12,7 +12,6 @@ public:
 	unsigned int vertexcount = 0;
 	unsigned int trianglecount = 0;
 private:
-	static float findnumberfloat(std::string& line, int scale);
-	static unsigned int findnumberuint(std::string& line);
-
+	static float findnumberfloataccurate(std::string& line, size_t& size); //konvertiert String Floats zu float Floats
+	static unsigned int findnumberuint(std::string& line); //konvertiert String uints zu uints
 };
