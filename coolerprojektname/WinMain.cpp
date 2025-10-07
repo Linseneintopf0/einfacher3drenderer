@@ -4,6 +4,7 @@
 #include "DebugTools.h"
 #include <iostream>
 #include <vector>
+#include <memory>
 
 int CALLBACK WinMain(
 	HINSTANCE hInstance,
@@ -11,17 +12,10 @@ int CALLBACK WinMain(
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-
-		//Erstellen von Farben
-		Color white(1.0f, 1.0f, 1.0f, 1);
-		Color black(0.0f, 0.0f, 0.0f, 1);
-		Color aquablue(0.0f, 0.5f, 1.0f, 1);
-
-
 		//Erstellen von Grafik Strukturen:
-		Window::graphicsstruct tg1;
-			tg1.dateipfad = "teapot.obj"; //!!Ausschließlich ASCII/UTF-8 Zeichen!!
-			tg1.colorobj =& white; //Hintergrundfarbe
+		Window::GraphicsStructure tg1;
+			tg1.FilePath = "teapot.obj"; //!!Ausschließlich ASCII/UTF-8 Zeichen!!
+			tg1.ColorObj = std::make_unique<Color>(255, 255, 255, 1); //Hintergrundfarbe
 			tg1.scale = 3; //Korrekturlevel für Risse im Model
 
 
@@ -36,22 +30,39 @@ int CALLBACK WinMain(
 			tg1);						//Name einer Grafikstruktur
 
 		//DirectX gedöns Erstellen
-		MSG msg;
-		msg.message = NULL;
-		BOOL bPMResult;
-		while (msg.message != WM_QUIT)
+		
+		MSG Msg;
+		Msg.message = NULL;
+
+		MSG PrevMsg;
+		PrevMsg = {0};
+
+		BOOL bPeekMessageResult;
+		while (Msg.message != WM_QUIT)
 		{
-			bPMResult = PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
-			TranslateMessage(&msg);
-			DispatchMessageA(&msg);
+			bPeekMessageResult = PeekMessageA(&Msg, NULL, 0, 0, PM_REMOVE);
+			TranslateMessage(&Msg);
+			if (Msg.message == WM_KEYDOWN || Msg.message == WM_KEYUP) //Alle Nicht-Keyboard-Messages passen lassen
+			{
+				//filtern für widerhohlende Nachichten, außer bei welchen für Verschiedene Tasten UND Filtern für Tastendrücke, die wiederhohlend sind
+				if ( ((PrevMsg.message != Msg.message) || (PrevMsg.wParam != Msg.wParam)) && (Msg.message != WM_KEYDOWN || !(Msg.lParam & ((long long)1 << 31))) )
+				{ 
+					DispatchMessageA(&Msg); 
+				}
+			} 
+			else 
+			{
+				DispatchMessageA(&Msg);
+			}
 			for (unsigned int i = 0; i < Window::WindowCount; i++)
 			{
-				Scene::DoFrame(*Window::windowlist[i]);
+				Scene::DoFrame(*Window::WindowList[i]);
 			}
+			PrevMsg = Msg;
 		}
-		if (msg.message == WM_QUIT)
+		if (Msg.message == WM_QUIT)
 		{
-			return (int)msg.wParam;
+			return (int)Msg.wParam;
 		}
 		else
 		{

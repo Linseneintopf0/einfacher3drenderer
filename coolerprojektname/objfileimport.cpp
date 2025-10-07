@@ -128,16 +128,16 @@ float objfileimport::findnumberfloataccurate(std::string& line, size_t& size)
 
 	for (size_t i = signbit; i < decimalpoint; i++)
 	{
-		beforecommadigits = beforecommadigits + (unsigned char)(line[i] - 48) * std::pow(10, i - signbit);
+		beforecommadigits = beforecommadigits + (unsigned int)((unsigned char)(line[i] - 48) * std::pow(10, i - signbit));
 		///bilden der Vorkommastellen "std::pow(10, i-signbit)"
 		///steht für 10^(aktuelle 10er Potenz) -> durch addieren 
 		///des Signbit im Iterator, hier entfernen
 	}
 
-	float returnfloat = beforecommadigits; //erstellen der return Float mit den Vorkommastellen
-	int exp = decimalpoint - numberlength; //bilden des Exponent -> "negative Nummernlänge + decimal Punkt" entspricht "decimalpunkt - numernlänge"
+	float returnfloat = (float)beforecommadigits; //erstellen der return Float mit den Vorkommastellen
+	int exp = (int)decimalpoint - (int)numberlength; //bilden des Exponent -> "negative Nummernlänge + decimal Punkt" entspricht "decimalpunkt - numernlänge"
 
-	returnfloat = returnfloat + std::pow(10.0, (double)(exp)) * afterkommadigits; //addieren der Nachkommazahlen -> Kommazahl wird gebildet
+	returnfloat = returnfloat + (float)(std::pow(10.0, (double)(exp)) * afterkommadigits); //addieren der Nachkommazahlen -> Kommazahl wird gebildet
 
 	size = line.length()+1; //returnen der Länge
 

@@ -7,21 +7,15 @@
 #include "Color.h"
 #include "Camera.h"
 
+//Klassen Vordefinierungen für die Pointer zu Objekten dieser Klassen
+class Camera;
 class Scene;
 class Graphics;
+
 class Window
 {
 public:
-
-	//Jedes Fenster hat eine graphicstuct, die hier declariert ist
-	struct graphicsstruct {
-		mutable std::string dateipfad;
-		const Color* colorobj = nullptr;
-		int scale = 0;
-	};
-	const graphicsstruct* sGfx;
-	Camera::transformstruct stf = {0,0,0,0,0,0};
-
+	struct GraphicsStructure;
 private:
 	class WindowClass
 	{
@@ -41,24 +35,33 @@ private:
 		HINSTANCE hInst;												//erzeugt variable "hInst" als HINSTANCE
 	};
 public:
-	Window(unsigned short width, unsigned short height, const char* name, const graphicsstruct &sGfx) noexcept;		//constructor (duh)
+	Window(unsigned short Width, unsigned short Height, const char* Name, const GraphicsStructure &sGraphics) noexcept;		//constructor (duh)
 	~Window();																										//destructer (duh duh)
 	Window(const Window&) = delete;																					//verhindert kopieren von Objekten der Klasse "Window", durch 'Window kopie(original);'
 	Window& operator=(const Window&) = delete;																		//verhindert kopieren von Objekten der Klasse "Window", durch 'Window kopie = original;'
-	Graphics& pGraphics();
+	Graphics& pGraphicsGet();
+	Scene& pSceneGet();
+	Camera& pCameraGet();
 private:
-	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK HandleMsgAPICon(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT CALLBACK HandleMsgSetup(HWND hWindow, UINT Msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK HandleMsgAPICon(HWND hWindow, UINT Msg, WPARAM wParam, LPARAM lParam);
+	LRESULT HandleMsg(HWND hWindow, UINT Msg, WPARAM wParam, LPARAM lParam, Window& pWindow) noexcept;
 private:
-	HWND hWnd;
-	std::unique_ptr<Graphics> pGfx;
+	HWND hWindow;
+	std::unique_ptr<Graphics> pGraphics;
 	std::unique_ptr<Scene> pScene;
-	mutable std::string title;
+	std::unique_ptr<Camera> pCamera;
 public:
-	WPARAM currentpressedkey = 0;
-	unsigned int width;
-	unsigned int height;
+	unsigned int HeldKeys = 0;
+	unsigned int Width;
+	unsigned int Height;
 	static unsigned long WindowCount;									//Number of current Windows (to dynamically add and close them, and stop the program when this is 0
-	static std::vector<Window*> windowlist;								//Vector with pointers to every Window Instance (for looping over in Graphical uses)
+	static std::vector<Window*> WindowList;								//Vector with pointers to every Window Instance (for looping over in Graphical uses)
+
+	struct GraphicsStructure {
+		mutable std::string FilePath;
+		std::unique_ptr<Color> ColorObj;
+		int scale = 0;
+	};
+	const GraphicsStructure* structureGraphics;
 };

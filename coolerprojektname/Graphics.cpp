@@ -242,7 +242,7 @@ void Graphics::UpdateAspectratio(unsigned short width, unsigned short height)
 	Graphics::SetupOutputmerger(width, height);
 }
 
-void Graphics::UpdateConstantBuffer(unsigned short width, unsigned short height, Camera::transformstruct transformstruct)
+void Graphics::UpdateConstantBuffer(unsigned short width, unsigned short height, Camera& pCamera)
 {
 #pragma region UpdateConstantBuffer
 
@@ -259,12 +259,10 @@ void Graphics::UpdateConstantBuffer(unsigned short width, unsigned short height,
 	{
 		{
 			dx::XMMatrixTranspose(
-				dx::XMMatrixTranslation(-0.5f, -0.5f, -0.5f) *
-				dx::XMMatrixRotationX(-transformstruct.rx) *
-				dx::XMMatrixRotationY(-transformstruct.ry) *
-				dx::XMMatrixRotationZ(-transformstruct.rz) *
-				dx::XMMatrixTranslation(transformstruct.x, transformstruct.y, transformstruct.z) *
-				dx::XMMatrixTranslation(0.0f, 0.0f, 8.0f) *
+				dx::XMMatrixTranslation(pCamera.GetPosition().x, pCamera.GetPosition().y, pCamera.GetPosition().z) *
+				dx::XMMatrixRotationZ(-pCamera.GetPosition().roll)*
+				dx::XMMatrixRotationY(-pCamera.GetPosition().yaw) *
+				dx::XMMatrixRotationX(-pCamera.GetPosition().pitch)*
 				dx::XMMatrixPerspectiveLH(1.0f, aspectratio, 1.0f, 200.0f)
 			)
 		}

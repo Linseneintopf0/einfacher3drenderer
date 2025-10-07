@@ -3,40 +3,37 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "objfileimport.h"
+#include <cmath>
 
-void Scene::DoFrame(Window &wnd)
+void Scene::DoFrame(Window &window)
 {
-	//Kamera Bewegen
-	wnd.stf = Camera::UpDatePosition(wnd.stf, wnd.currentpressedkey);
-	wnd.stf.rx = Camera::RotationLoop(wnd.stf.rx);
-	wnd.stf.ry = Camera::RotationLoop(wnd.stf.ry);
-	wnd.stf.rz = Camera::RotationLoop(wnd.stf.rz);
-
+	//Kamera Position anhand der gedrückten Tasten aktualisieren
+	window.pCameraGet().UpdatePosition(window.HeldKeys, 0.025f, 0.005f); //ValuePos und -Rot sind Werte, um die die Kamera pro Frame transformiert wird
 	//Malfläche leeren
-	wnd.pGraphics().ClearBuffer(wnd.sGfx->colorobj);
+	window.pGraphicsGet().ClearBuffer(window.structureGraphics->ColorObj.get());
 	//Kamera Buffer aktualisieren
-	wnd.pGraphics().UpdateConstantBuffer(wnd.width, wnd.height, wnd.stf);
+	window.pGraphicsGet().UpdateConstantBuffer(window.Width, window.Height, window.pCameraGet());
 	//Das Bild Malen
-	wnd.pGraphics().Draw();
+	window.pGraphicsGet().Draw();
 	//Das Bild absenden
-	wnd.pGraphics().EndFrame();
+	window.pGraphicsGet().EndFrame();
 }
 
 Scene::Scene(Window& wnd)
 	:
-	scale(wnd.sGfx->scale)
+	scale(wnd.structureGraphics->scale)
 {
 	//If Liste für Modelldaten
-	if (wnd.sGfx->dateipfad == "")
+	if (wnd.structureGraphics->FilePath == "")
 	{
 		Graphics::Vertex vertices = {1.0f, 1.0f, 1.0f, 0, 0, 0, 0};
 		Graphics::Index indices = { 0, 0, 0 };
 	}
-	else if (wnd.sGfx->dateipfad == "RAINBOW")
+	else if (wnd.structureGraphics->FilePath == "RAINBOW")
 	{
 		
 	}
-	else if (wnd.sGfx->dateipfad == "CUBE")
+	else if (wnd.structureGraphics->FilePath == "CUBE")
 	{
 		Graphics::Vertex vertices[] =
 		{//    x      y		z     r    g    b    a (wird eh überschrieben, allerdings braucht die PrimitiveTopology den Alpha Wert)
@@ -70,9 +67,9 @@ Scene::Scene(Window& wnd)
 	else 
 	{
 		//OBJ File Test
-		if (objfileimport::isobjfile(wnd.sGfx->dateipfad))
+		if (objfileimport::isobjfile(wnd.structureGraphics->FilePath))
 		{
-			objfileimport objfile(wnd.sGfx->dateipfad, *this); //erstellen eine obj Objektes wenn die Bedingungen gelten
+			objfileimport objfile(wnd.structureGraphics->FilePath, *this); //erstellen eine obj Objektes wenn die Bedingungen gelten
 			pVertices = vertices.get();
 			pIndices = indices.get();
 			vertexcount = objfile.vertexcount;
@@ -81,7 +78,7 @@ Scene::Scene(Window& wnd)
 	}
 
 	//Setup Befehle
-	wnd.pGraphics().SetupVertexAndIndexBuffer(pIndices, pVertices, trianglecount, vertexcount);
-	wnd.pGraphics().SetupConstantBufferAndShaders();
-	wnd.pGraphics().SetupOutputmerger(wnd.width, wnd.height);
+	wnd.pGraphicsGet().SetupVertexAndIndexBuffer(pIndices, pVertices, trianglecount, vertexcount);
+	wnd.pGraphicsGet().SetupConstantBufferAndShaders();
+	wnd.pGraphicsGet().SetupOutputmerger(wnd.Width, wnd.Height);
 }

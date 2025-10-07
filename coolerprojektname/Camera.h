@@ -1,93 +1,38 @@
+#pragma once
 #include "Window.h"
 #include <cmath>
 
-#pragma once
+//2 Byte große Definitionen für verschiedene Bewegungen -> Werden kombiniert zu n vielen
+#define DirectionX			(unsigned int)0x0001
+#define DirectionXn			(unsigned int)0x0002
+#define DirectionY			(unsigned int)0x0004
+#define DirectionYn			(unsigned int)0x0008
+#define DirectionZ			(unsigned int)0x0010
+#define DirectionZn			(unsigned int)0x0020
+#define RotationYaw			(unsigned int)0x0040
+#define RotationYawn		(unsigned int)0x0080
+#define RotationPitch		(unsigned int)0x0100
+#define RotationPitchn		(unsigned int)0x0200
+#define RotationRoll		(unsigned int)0x0400
+#define RotationRolln		(unsigned int)0x0800
+#define END					(unsigned int)0x1000
+#define TransformType		unsigned int
+
 class Camera {
 public:
-	struct transformstruct {
+	Camera();
+	struct Transform
+	{
 		float x = 0;
 		float y = 0;
 		float z = 0;
-		float rx = 0;
-		float ry = 0;
-		float rz = 0;
+		float yaw = 0;
+		float pitch = 0;
+		float roll = 0;
 	};
+private:
+	Transform structTransform;
 public:
-	static float RotationLoop(float angle)
-	{
-		if (2* std::atan(1) * 4 >= angle && angle >= -2* std::atan(1) * 4)
-		{
-			return angle;
-		}
-		else { return 0; }
-	}
-	static transformstruct UpDatePosition(transformstruct stf, WPARAM currentpressedkey)
-	{
-		switch (currentpressedkey)
-		{
-		case (VK_UP):
-			{
-			stf.rx += 0.05f;
-			break;
-			}
-		case (VK_DOWN):
-		{
-			stf.rx += -0.05f;
-			break;
-		}
-		case (VK_LEFT):
-		{
-			stf.ry += -0.05f;
-			break;
-		}
-		case (VK_RIGHT):
-		{
-			stf.ry += 0.05f;
-			break;
-		}
-		case ('Q'):
-		{
-			stf.rz += -0.05f;
-			break;
-		}
-		case ('E'):
-		{
-			stf.rz += 0.05f;
-			break;
-		}
-
-
-		case ('W'):
-		{
-			stf.z += -0.05f;
-			break;
-		}
-		case ('A'):
-		{
-			stf.x += 0.05f;
-			break;
-		}
-		case ('S'):
-		{
-			stf.z += 0.05f;
-			break;
-		}
-		case ('D'):
-		{
-			stf.x += -0.05f;
-			break;
-		}
-		case (VK_SPACE):
-		{
-			stf.y += -0.05f;
-			break;
-		}
-		case (VK_CONTROL):
-		{
-			stf.y += 0.05f;
-			break;
-		}
-		}
-		return stf;
-	}
+	void UpdatePosition(TransformType HeldKeys, float ValuePos , float ValueRot);
+	Camera::Transform& GetPosition();
 };

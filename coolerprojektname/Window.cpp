@@ -10,7 +10,7 @@ Window::WindowClass Window::WindowClass::wndClass;
 
 //Definition der Statischen Variablen
 unsigned long Window::WindowCount = 0;
-std::vector<Window*> Window::windowlist = {};
+std::vector<Window*> Window::WindowList = {};
 
 #pragma region WindowClass Shinanigans
 
@@ -54,12 +54,11 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept
 
 #pragma region Window Shenanigans
 
-Window::Window(unsigned short width, unsigned short height, const char* name, const graphicsstruct& sGfx) noexcept
+Window::Window(unsigned short Width, unsigned short Height, const char* Name, const GraphicsStructure& structureGraphics) noexcept
 	:
-	height(height),
-	width(width),
-	title(name),
-	sGfx(&sGfx)
+	Height(Height),
+	Width(Width),
+	structureGraphics(&structureGraphics)
 {
 	RECT wr;
 	int maximize = NULL; //Maximieren des Fensters, wenn Fensterdimension außerhalb der gültigen Dimensionen ist
@@ -67,59 +66,70 @@ Window::Window(unsigned short width, unsigned short height, const char* name, co
 	//Erstellen eines Rechtecks, der Größe des Fensters
 	wr.left = 0;
 	wr.top = 0;
-	if	((height == 0 && width == 0) || 
-		(height > GetSystemMetrics(SM_CYFULLSCREEN) && width > GetSystemMetrics(SM_CXFULLSCREEN))) {
-		Window::height = GetSystemMetrics(SM_CYFULLSCREEN)-100;
-		Window::width = GetSystemMetrics(SM_CXFULLSCREEN)-500;
+	if	((Height == 0 && Width == 0) || 
+		(Height > GetSystemMetrics(SM_CYFULLSCREEN) && Width > GetSystemMetrics(SM_CXFULLSCREEN))) {
+		Window::Height = GetSystemMetrics(SM_CYFULLSCREEN)-100;
+		Window::Width = GetSystemMetrics(SM_CXFULLSCREEN)-500;
 		maximize = WS_MAXIMIZE;
 	}
-	wr.right = Window::width + wr.left;
-	wr.bottom = Window::height + wr.top;
+	wr.right = Window::Width + wr.left;
+	wr.bottom = Window::Height + wr.top;
 
 	//Adjustieren des Rechtecks an die vorhandene Menüleiste
 	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX| WS_SYSMENU, FALSE);
 
 	//Fenster erstellen
-	hWnd = CreateWindowExA(0,
-		WindowClass::GetName(), name,
+	Window::hWindow = CreateWindowExA(0,
+		WindowClass::GetName(), Name,
 		WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_VISIBLE | maximize,
 		CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
 		NULL, NULL, WindowClass::GetInstance(), this
 	);
 
 	if (maximize) {
-		GetWindowRect(hWnd, &wr);
-		Window::height = wr.bottom - wr.top;
-		Window::width = wr.right - wr.left;
+		GetWindowRect(hWindow, &wr);
+		Window::Height = wr.bottom - wr.top;
+		Window::Width = wr.right - wr.left;
 	}
 
 	//Fenstertitel korrigieren (keine Ahnung warum der beim Erstellen nicht richtig ist)
-	SetWindowTextA(hWnd, (char*)&title[0]);
+	SetWindowTextA(hWindow, (char*)&Name[0]);
 
 	//Erstellen des Graphics Objektes
-	pGfx = std::make_unique<Graphics>(hWnd);
+	pGraphics = std::make_unique<Graphics>(hWindow);
 	pScene = std::make_unique<Scene>(*this);
+	pCamera = std::make_unique<Camera>();
 
 	//Window Pointer Management
-	windowlist.push_back(this);
+	WindowList.push_back(this);
 	WindowCount++;
 }
 
 Window::~Window()
 {
-	auto objname = std::find(windowlist.begin(), windowlist.end(), this);
-	windowlist.erase(objname);
-	DestroyWindow(hWnd);
+	auto objname = std::find(WindowList.begin(), WindowList.end(), this);
+	WindowList.erase(objname);
+	DestroyWindow(hWindow);
 	WindowCount--;
 }
 
 #pragma endregion
 
-#pragma region Function for getting Graphics Object
+#pragma region Pointer zu unterliegenden Objekten kriegen
 
-Graphics& Window::pGraphics()
+Graphics& Window::pGraphicsGet()  
+{  
+    return *pGraphics;
+}
+
+Scene& Window::pSceneGet()
 {
-	return *pGfx;
+	return *pScene;
+}
+
+Camera& Window::pCameraGet()
+{
+	return *pCamera;
 }
 
 #pragma endregion
@@ -142,7 +152,7 @@ LRESULT WINAPI Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 		Window* const pWindow = static_cast<Window*>(pStruktur->lpCreateParams);			//speichern der CreateParam aus CREATESTRUCTW als Window Pointer
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindow));				//setzt GWLP_USERDATA zu dem Pointer zu dem Fenster
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgAPICon));		//setzt GWLP_WNDPROC zu dem Pointer der HandleMsgSetup2 Funktion
-		return pWindow->HandleMsg(hWnd, msg, wParam, lParam);										//für weitere Verarbeitung von messages aufruf der HandleMsg funktion
+		return pWindow->HandleMsg(hWnd, msg, wParam, lParam, *pWindow);										//für weitere Verarbeitung von messages aufruf der HandleMsg funktion
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
@@ -150,7 +160,7 @@ LRESULT WINAPI Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 LRESULT WINAPI Window::HandleMsgAPICon(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	Window* const pWindow = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));				//der pointer zu dem Fenster wird extrahiert aus der WinAPI
-	return pWindow->HandleMsg(hWnd, msg, wParam, lParam);													//aus diesem Pointer wird die HandleMsg Funktion als pointer returnt (und ausgeführt)
+	return pWindow->HandleMsg(hWnd, msg, wParam, lParam, *pWindow);											//aus diesem Pointer wird die HandleMsg Funktion als pointer returnt (und ausgeführt)
 }
 
 #pragma endregion
